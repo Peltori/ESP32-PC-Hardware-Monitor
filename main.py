@@ -24,6 +24,7 @@ display = sh1106.SH1106_I2C(128, 64, i2c)
 
 
 def connect_wifi(ssid, password):
+    time.sleep(1)
     wlan = network.WLAN()
     wlan.active(True)
 
@@ -65,12 +66,19 @@ def display_data(data, network, esp_temp):
     display.show()
 
 
-wlan = connect_wifi("WIFI_SSID", "WIFI_PASSWORD")
+wlan = connect_wifi(WIFI_SSID, WIFI_PASSWORD)
 time.sleep(UPDATE_INTERVAL)
 
 
 
 while True:
+    if not wlan.isconnected():
+        try:
+            wlan = connect_wifi(WIFI_SSID, WIFI_PASSWORD)
+        except OSError:
+            time.sleep(UPDATE_INTERVAL)
+            continue
+
     try:
         response = requests.get(API_URL)
         data = response.json()
